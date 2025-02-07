@@ -45,10 +45,11 @@ export function SleepStagesChart({ data }: SleepStagesChartProps) {
                 fill={colors[index]}
               />
               <SvgText
-                x={x + barWidth/2}
-                y={y - 10}
+                x={x + (barWidth - 10) / 2}
+                y={y - 15}
                 textAnchor="middle"
                 fill="black"
+                fontSize="12"
               >
                 {value.toFixed(1)}%
               </SvgText>
