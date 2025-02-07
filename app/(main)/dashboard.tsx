@@ -227,15 +227,15 @@ export default function Dashboard() {
           <View style={styles.legend}>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: '#1E88E5' }]} />
-              <Text>Deep ({((mostRecentData?.deep_sleep_duration || 0) / (mostRecentData?.sleep_duration || 1) * 100).toFixed(1)}%)</Text>
+              <Text>Deep</Text>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: '#7E57C2' }]} />
-              <Text>REM ({((mostRecentData?.rem_sleep_duration || 0) / (mostRecentData?.sleep_duration || 1) * 100).toFixed(1)}%)</Text>
+              <Text>REM</Text>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: '#4CAF50' }]} />
-              <Text>Light ({((mostRecentData?.light_sleep_duration || 0) / (mostRecentData?.sleep_duration || 1) * 100).toFixed(1)}%)</Text>
+              <Text>Light</Text>
             </View>
           </View>
         </Card.Content>
