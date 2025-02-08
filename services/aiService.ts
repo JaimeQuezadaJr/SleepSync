@@ -1,54 +1,78 @@
-import { SleepData } from '../types/database';
 import { config } from '../lib/config';
+import { SleepData } from '../types/database';
 
-const OPENAI_API_KEY = config.OPENAI_API_KEY;
+// Replace with your computer's actual IP address
+const OLLAMA_URL = "http://10.0.0.171:11434/api/generate";
 
-if (!OPENAI_API_KEY) {
-  console.error('Missing OpenAI API key');
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
 }
 
 export const aiService = {
+  // Keep track of conversation history
+  conversationHistory: [] as Message[],
+  lastContext: null as any, // Store Ollama's context
+
   async generateResponse(prompt: string, sleepData: SleepData[] | null = null): Promise<string> {
     try {
-      const latestSleep = sleepData?.[0];
-      const sleepSummary = latestSleep ? 
-        `On ${new Date(latestSleep.date).toLocaleDateString()}, you slept for ${latestSleep.sleep_duration?.toFixed(1) ?? 'unknown'} hours total, including ${latestSleep.deep_sleep_duration?.toFixed(1) ?? 'unknown'} hours of deep sleep and ${latestSleep.rem_sleep_duration?.toFixed(1) ?? 'unknown'} hours of REM sleep. Your resting heart rate was ${latestSleep.resting_heart_rate ?? 'unknown'} bpm.` 
-        : 'No sleep data available.';
+      // Format sleep data into readable context
+      let sleepContext = '';
+      if (sleepData && sleepData.length > 0) {
+        sleepContext = `Here is your recent sleep data:\n${sleepData.map(day => 
+          `Date: ${new Date(day.date).toLocaleDateString()}
+           - Total Sleep: ${day.sleep_duration?.toFixed(1) ?? 'unknown'} hours
+           - Deep Sleep: ${day.deep_sleep_duration?.toFixed(1) ?? 'unknown'} hours
+           - REM Sleep: ${day.rem_sleep_duration?.toFixed(1) ?? 'unknown'} hours
+           - Light Sleep: ${day.light_sleep_duration?.toFixed(1) ?? 'unknown'} hours
+           - Resting Heart Rate: ${day.resting_heart_rate ?? 'unknown'} bpm`
+        ).join('\n')}\n\n`;
+      }
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      // Combine sleep context with user prompt
+      const fullPrompt = sleepContext + prompt;
+
+      // Add user message to history
+      this.conversationHistory.push({ role: 'user', content: fullPrompt });
+
+      const response = await fetch(OLLAMA_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: `You are a sleep analysis assistant. Your role is to help users understand their sleep patterns and provide actionable advice for improvement. Be concise and specific in your responses.`
-            },
-            {
-              role: 'user',
-              content: `Sleep Data: ${sleepSummary}\n\nQuestion: ${prompt}`
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 200,
+          model: "llama3.2",
+          prompt: fullPrompt,
+          context: this.lastContext, // Send previous context
+          stream: false
         }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to generate response');
+        const error = await response.text();
+        console.error('Ollama API error:', error);
+        throw new Error('Failed to generate response');
       }
 
       const data = await response.json();
-      return data.choices[0].message.content.trim();
+      
+      // Store the new context for next message
+      this.lastContext = data.context;
+      
+      // Add assistant response to history
+      this.conversationHistory.push({ role: 'assistant', content: data.response });
+
+      return data.response;
 
     } catch (error) {
       console.error('AI Service error:', error);
-      throw new Error('Failed to generate response. Please try again later.');
+      throw new Error('Failed to connect to Ollama. Please check your network settings.');
     }
+  },
+
+  // Method to clear conversation history
+  clearConversation() {
+    this.conversationHistory = [];
+    this.lastContext = null;
   }
-}; 
+};

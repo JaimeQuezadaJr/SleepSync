@@ -170,7 +170,7 @@ export default function Dashboard() {
       )}
 
       <View style={styles.headerContainer}>
-        <Text style={styles.title}>Sleep</Text>
+        <Text style={styles.title}>Summary</Text>
         <Menu
           visible={dateMenuVisible}
           onDismiss={() => setDateMenuVisible(false)}

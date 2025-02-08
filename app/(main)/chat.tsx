@@ -43,10 +43,10 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      // Fetch latest sleep data to provide context
+      // Fetch latest sleep data
       const { data: sleepData } = await sleepDataService.fetchUserSleepData(session?.user.id || '');
       
-      // Get AI response
+      // Pass sleep data to AI service
       const response = await aiService.generateResponse(inputText, sleepData);
 
       const assistantMessage: Message = {
@@ -77,7 +77,7 @@ export default function Chat() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Assistant</Text>
+        <Text style={styles.title}>AIME</Text>
       </View>
 
       <ScrollView
