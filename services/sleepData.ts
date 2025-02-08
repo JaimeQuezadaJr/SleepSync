@@ -100,4 +100,19 @@ export const sleepDataService = {
       }
     }
   },
+
+  async deleteSleepData(userId: string, date: string): Promise<{ error: any }> {
+    try {
+      const { error } = await supabase
+        .from('sleep_data')
+        .delete()
+        .eq('user_id', userId)
+        .eq('date', date);
+      
+      return { error };
+    } catch (error) {
+      console.error('Delete error:', error);
+      return { error };
+    }
+  },
 }; 

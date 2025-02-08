@@ -17,9 +17,9 @@ export default function MainLayout() {
       <Tabs.Screen
         name="upload"
         options={{
-          title: 'Upload',
+          title: 'Sync',
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="upload" size={24} color={color} />
+            <MaterialCommunityIcons name="sync" size={24} color={color} />
           ),
         }}
       />

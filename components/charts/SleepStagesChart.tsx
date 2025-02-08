@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Dimensions, Text } from 'react-native';
+import { View, Dimensions, StyleSheet } from 'react-native';
 import Svg, { Rect, Text as SvgText } from 'react-native-svg';
 
 // Match the exact colors from the dashboard legendDots
 const COLORS = {
-  deep: '#1E88E5',    // Match legendDot backgroundColor
-  rem: '#7E57C2',     // Match legendDot backgroundColor
-  light: '#4CAF50',   // Match legendDot backgroundColor
+  light: '#4CAF50',   // Light sleep (green)
+  deep: '#FFB300',    // Deep sleep (yellow)
+  rem: '#F44336',     // REM/Awakening (red)
 };
 
 interface SleepStagesChartProps {
@@ -18,45 +18,55 @@ interface SleepStagesChartProps {
 }
 
 export function SleepStagesChart({ data }: SleepStagesChartProps) {
-  const width = Dimensions.get('window').width - 60;
-  const height = 220;
-  const padding = 40;
-  const barWidth = (width - padding * 2) / 3;
+  const width = Dimensions.get('window').width - 48; // Increased padding
+  const height = 40;  // Thinner bar
+  const padding = 0;  // Remove padding
+  const barHeight = 8;  // Thinner bar
 
-  const values = [data.deep, data.rem, data.light];
-  const colors = [COLORS.deep, COLORS.rem, COLORS.light];
-  const maxValue = Math.max(...values, 100);
+  const total = data.light + data.deep + data.rem;
+  const lightWidth = (data.light / total) * (width - padding * 2);
+  const deepWidth = (data.deep / total) * (width - padding * 2);
+  const remWidth = (data.rem / total) * (width - padding * 2);
 
   return (
-    <View>
+    <View style={styles.container}>
       <Svg width={width} height={height}>
-        {values.map((value, index) => {
-          const barHeight = (value / maxValue) * (height - padding * 2);
-          const x = padding + index * barWidth;
-          const y = height - padding - barHeight;
-
-          return (
-            <React.Fragment key={index}>
-              <Rect
-                x={x}
-                y={y}
-                width={barWidth - 10}
-                height={barHeight}
-                fill={colors[index]}
-              />
-              <SvgText
-                x={x + (barWidth - 10) / 2}
-                y={y - 15}
-                textAnchor="middle"
-                fill="black"
-                fontSize="12"
-              >
-                {value.toFixed(1)}%
-              </SvgText>
-            </React.Fragment>
-          );
-        })}
+        {/* Light Sleep */}
+        <Rect
+          x={padding}
+          y={(height - barHeight) / 2}
+          width={lightWidth}
+          height={barHeight}
+          fill={COLORS.light}
+          rx={4}
+        />
+        
+        {/* Deep Sleep */}
+        <Rect
+          x={padding + lightWidth}
+          y={(height - barHeight) / 2}
+          width={deepWidth}
+          height={barHeight}
+          fill={COLORS.deep}
+        />
+        
+        {/* REM Sleep */}
+        <Rect
+          x={padding + lightWidth + deepWidth}
+          y={(height - barHeight) / 2}
+          width={remWidth}
+          height={barHeight}
+          fill={COLORS.rem}
+          rx={4}
+        />
       </Svg>
     </View>
   );
-} 
+}
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    paddingVertical: 0,
+  },
+}); 
